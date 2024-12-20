@@ -1,15 +1,19 @@
 import React from 'react';
-import {Container, Card} from 'reactstrap';
+import { Container, Card } from 'reactstrap';
 
 function Index() {
 	return (
 		<Container>
 			<Card className='mt-5 p-5'>
-				<h1 className='display-4'>&#123;your name&#125;</h1>
+				<h1 className='display-4'>&#123;Nelson Nolia&#125;</h1>
+				<p>
+					Hi, I'm Nelson, an aspiring front-end developer passionate about crafting intuitive user interfaces and building responsive web applications.
+					Currently, I'm focused on honing my skills to create modern, interactive, and efficient digital experiences.
+					Beyond coding, I enjoy exploring new tools and technologies that push the my boundaries of creativity in web development.
+				</p>
 				<address>
-					<a href='mailto:email@address.com'>email@address.com</a>
+					<a href='mailto:email@address.com'>real.nelson92@gmail.com</a>
 					<br />
-					<a href='tel:+635552368'>(+63) 123-1234-1234</a>
 				</address>
 			</Card>
 		</Container>
