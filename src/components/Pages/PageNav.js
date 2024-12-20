@@ -1,5 +1,5 @@
-import React, {useState} from 'react';
-import {NavLink as Link} from 'react-router-dom';
+import React, { useState } from 'react';
+import { NavLink as Link } from 'react-router-dom';
 import {
 	Collapse,
 	Navbar,
@@ -8,11 +8,6 @@ import {
 	Nav,
 	NavItem,
 	NavLink,
-	UncontrolledDropdown,
-	DropdownToggle,
-	DropdownMenu,
-	DropdownItem,
-	NavbarText,
 } from 'reactstrap';
 
 function PageNav() {
@@ -32,34 +27,7 @@ function PageNav() {
 							Users
 						</NavLink>
 					</NavItem>
-					<NavItem>
-						<NavLink tag={Link} to='/features'>
-							Features
-						</NavLink>
-					</NavItem>
-					<NavItem>
-						<NavLink tag={Link} to='/pricing'>
-							Pricing
-						</NavLink>
-					</NavItem>
-					<NavItem>
-						<NavLink tag={Link} to='/disabled' disabled>
-							Disabled
-						</NavLink>
-					</NavItem>
-					<UncontrolledDropdown nav inNavbar>
-						<DropdownToggle nav caret>
-							Options
-						</DropdownToggle>
-						<DropdownMenu>
-							<DropdownItem>Option 1</DropdownItem>
-							<DropdownItem>Option 2</DropdownItem>
-							<DropdownItem divider />
-							<DropdownItem>Reset</DropdownItem>
-						</DropdownMenu>
-					</UncontrolledDropdown>
 				</Nav>
-				<NavbarText>Simple Text</NavbarText>
 			</Collapse>
 		</Navbar>
 	);
