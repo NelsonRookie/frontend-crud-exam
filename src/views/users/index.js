@@ -1,11 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { Container, Table, Button } from 'reactstrap';
+import React, { useState, useEffect } from "react";
+import { Container, Table, Button } from "reactstrap";
+
+// Modals
+import AddModal from "./modals/createUserModal";
+import ConfirmationModal from "./modals/confirmationModal";
 
 function Index() {
-
 	const [users, setUsers] = useState([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState(null);
+	const [createUserModalOpen, setCreateUserModalOpen] = useState(false); // state variable for Create User Modal
+	const [showConfirmationModal, setShowConfirmationModal] = useState(false); // State for confirmation modal
+	const [newUser, setNewUser] = useState({ email: "", first_name: "", last_name: "" }); // for creating new users
+	const [showAllUsers, setShowAllUsers] = useState(false); // toggle for showing all users
 
 	/**
 	 * Fetch users data from the given page number.
@@ -43,9 +50,9 @@ function Index() {
 				const page1 = await fetchUserPage(1); // Fetch users from page 1
 				const page2 = await fetchUserPage(2); // Fetch users from page 2
 
-				// Combine users from both pages and take the first 10 rows
+				// Combine users from both pages
 				const combinedPages = [...page1, ...page2];
-				setUsers(combinedPages.slice(0, 10)); // Set users to the first 10
+				setUsers(combinedPages); // Store all users
 			} catch (error) {
 				setError(error.message); // Set error message
 			} finally {
@@ -55,6 +62,41 @@ function Index() {
 		fetchAllUsers();
 	}, []);
 
+	const toggleModal = () => setCreateUserModalOpen(!createUserModalOpen);
+	const toggleConfirmationModal = () => setShowConfirmationModal(!showConfirmationModal);
+
+
+	const createUser = async () => {
+		try {
+			const apiKey = process.env.REACT_APP_KEY;
+			const response = await fetch(`${apiKey}/users`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(newUser),
+			});
+			if (!response.ok) throw new Error("Failed to create user");
+
+			const createdUser = await response.json();
+
+			// Assign a local ID based on the current users array
+			const localId = users.length > 0 ? Math.max(...users.map((user) => user.id)) + 1 : 1;
+
+			// Override the server-provided ID for local consistency
+			const userWithLocalId = { ...createdUser, id: localId };
+
+			// Update the local state with the new user
+			setUsers([...users, userWithLocalId]);
+
+			// Close the modal and reset the input fields
+			toggleModal();
+			setNewUser({ email: "", first_name: "", last_name: "" });
+
+			toggleConfirmationModal(); // Show confirmation modal
+		} catch (error) {
+			setError(error.message);
+		}
+	};
+
 	if (isLoading) {
 		return <div>Loading users...</div>;
 	}
@@ -63,13 +105,17 @@ function Index() {
 		return <div>Error: {error}</div>;
 	}
 
+	const displayedUsers = showAllUsers ? users : users.slice(0, 10);
+
 	return (
 		<Container>
-			<div className='mt-3 text-right'>
-				<Button color='primary'>+ Add User</Button>
+			<div className="mt-3 text-right">
+				<Button color="primary" onClick={toggleModal}>
+					+ Add User
+				</Button>
 			</div>
 
-			<Table className='mt-3'>
+			<Table className="mt-3">
 				<thead>
 					<tr>
 						<th>ID</th>
@@ -81,9 +127,9 @@ function Index() {
 					</tr>
 				</thead>
 				<tbody>
-					{users.map((user) => (
+					{displayedUsers.map((user) => (
 						<tr key={user.id}>
-							<th scope='row'>{user.id}</th>
+							<th scope="row">{user.id}</th>
 							<td>
 								<img src={user.avatar} alt="User Profile" width="50" height="50" />
 							</td>
@@ -102,7 +148,29 @@ function Index() {
 					))}
 				</tbody>
 			</Table>
+
+			<div className="text-center mt-3">
+				<Button color="primary" outline onClick={() => setShowAllUsers(!showAllUsers)}>
+					{showAllUsers ? "Show Less" : "Show All Users"}
+				</Button>
+			</div>
+
+			<AddModal
+				isOpen={createUserModalOpen}
+				toggle={toggleModal}
+				newUser={newUser}
+				setNewUser={setNewUser}
+				createUser={createUser}
+			/>
+
+			{/* Confirmation Modal */}
+			<ConfirmationModal
+				isOpen={showConfirmationModal}
+				toggle={toggleConfirmationModal}
+				message="The new user has been successfully created and added to the list."
+			/>
 		</Container>
 	);
 }
+
 export default Index;
