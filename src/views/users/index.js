@@ -60,6 +60,10 @@ function Index() {
 		const fetchAllUsers = async () => {
 			try {
 				setIsLoading(true);
+
+				// add delay
+				await new Promise((resolve) => setTimeout(resolve, 2000));
+
 				const page1 = await fetchUserPage(1); // Fetch users from page 1
 				const page2 = await fetchUserPage(2); // Fetch users from page 2
 
@@ -160,11 +164,11 @@ function Index() {
 	};
 
 	if (isLoading) {
-		return <div>Loading users...</div>;
+		return <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: 'bold' }}>Loading users...</div>;
 	}
 
 	if (error) {
-		return <div>Error: {error}</div>;
+		return <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: 'bold' }}>Error: {error}</div>;
 	}
 
 	const displayedUsers = showAllUsers ? users : users.slice(0, 10);
