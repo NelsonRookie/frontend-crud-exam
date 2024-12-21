@@ -5,6 +5,7 @@ import { Container, Table, Button } from "reactstrap";
 import AddModal from "./modals/createUserModal";
 import ConfirmationModal from "./modals/confirmationModal";
 import EditModal from "./modals/editUserModal";
+import DeleteModal from "./modals/deleteUserModal";
 
 function Index() {
 	const [users, setUsers] = useState([]);
@@ -13,10 +14,19 @@ function Index() {
 	const [createUserModalOpen, setCreateUserModalOpen] = useState(false); // state variable for Create User Modal
 	const [showConfirmationModal, setShowConfirmationModal] = useState(false); // State for confirmation modal
 	const [editModalOpen, setEditModalOpen] = useState(false);
+	const [deleteUser, setDeleteUser] = useState(null);
 	const [modalMessage, setModalMessage] = useState(" ");
 	const [newUser, setNewUser] = useState({ email: "", first_name: "", last_name: "" }); // for creating new users
 	const [showAllUsers, setShowAllUsers] = useState(false); // toggle for showing all users
 	const [editUser, setEditUser] = useState({ id: null, email: "", first_name: "", last_name: "" });
+	const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+
+	// toggle modals
+	const toggleModal = () => setCreateUserModalOpen(!createUserModalOpen);
+	const toggleConfirmationModal = () => setShowConfirmationModal(!showConfirmationModal);
+	const toggleEditModal = () => setEditModalOpen(!editModalOpen);
+	const toggleDeleteModal = () => setDeleteModalOpen(!deleteModalOpen);
+
 	/**
 	 * Fetch users data from the given page number.
 	 * @param {number} pageNumber
@@ -65,12 +75,9 @@ function Index() {
 		fetchAllUsers();
 	}, []);
 
-	const toggleModal = () => setCreateUserModalOpen(!createUserModalOpen);
-	const toggleConfirmationModal = () => setShowConfirmationModal(!showConfirmationModal);
-	const toggleEditModal = () => setEditModalOpen(!editModalOpen);
 
 	// confirmation message after successful creation of new user
-	const creatUserModalMessage = () => {
+	const createUserModalMessage = () => {
 		setModalMessage('User created succesfully!')
 	};
 	const createUser = async () => {
@@ -95,7 +102,7 @@ function Index() {
 			setUsers([...users, userWithLocalId]);
 
 			// Close the modal and reset the input fields
-			creatUserModalMessage();
+			createUserModalMessage();
 			toggleModal();
 			setNewUser({ email: "", first_name: "", last_name: "" });
 
@@ -105,10 +112,11 @@ function Index() {
 		}
 	};
 
-	// confirmation message after successful edit
+	// confirmation message after successfully edited the user
 	const editUserModalMessage = () => {
 		setModalMessage('User details updated succesfully!');
 	}
+
 	const updateUser = async () => {
 		try {
 			const apiKey = process.env.REACT_APP_KEY;
@@ -125,6 +133,27 @@ function Index() {
 
 			editUserModalMessage();
 			toggleConfirmationModal();
+		} catch (error) {
+			setError(error.message);
+		}
+	};
+
+	//confirmation message after successfully deleted the user
+	const deletedUserModalMessage = () => {
+		setModalMessage('User deleted succesfully!');
+	}
+
+	const deleteUserById = async () => {
+		try {
+			const apiKey = process.env.REACT_APP_KEY;
+			const response = await fetch(`${apiKey}/users/${deleteUser.id}`, { method: "DELETE" });
+			if (!response.ok) throw new Error("Failed to delete user");
+			setUsers(users.filter((user) => user.id !== deleteUser.id));
+
+			deletedUserModalMessage();
+			toggleConfirmationModal();
+			toggleDeleteModal();
+			setDeleteUser(null);
 		} catch (error) {
 			setError(error.message);
 		}
@@ -173,7 +202,7 @@ function Index() {
 								<Button color="primary" size="sm" className="me-2" onClick={() => { setEditUser(user); toggleEditModal() }}>
 									Edit
 								</Button>
-								<Button color="danger" size="sm">
+								<Button color="danger" size="sm" onClick={() => { setDeleteUser(user); toggleDeleteModal() }} >
 									Delete
 								</Button>
 							</td>
@@ -188,6 +217,7 @@ function Index() {
 				</Button>
 			</div>
 
+			{/* Modals */}
 			<AddModal
 				isOpen={createUserModalOpen}
 				toggle={toggleModal}
@@ -201,6 +231,14 @@ function Index() {
 				editUser={editUser}
 				setEditUser={setEditUser}
 				updateUser={updateUser} />
+
+			<DeleteModal
+				isOpen={deleteModalOpen}
+				toggle={toggleDeleteModal}
+				deleteUser={deleteUser}
+				deleteUserById={deleteUserById}
+
+			/>
 
 			{/* Confirmation Modal */}
 			<ConfirmationModal
