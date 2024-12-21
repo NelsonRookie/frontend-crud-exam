@@ -4,6 +4,7 @@ import { Container, Table, Button } from "reactstrap";
 // Modals
 import AddModal from "./modals/createUserModal";
 import ConfirmationModal from "./modals/confirmationModal";
+import EditModal from "./modals/editUserModal";
 
 function Index() {
 	const [users, setUsers] = useState([]);
@@ -11,9 +12,11 @@ function Index() {
 	const [error, setError] = useState(null);
 	const [createUserModalOpen, setCreateUserModalOpen] = useState(false); // state variable for Create User Modal
 	const [showConfirmationModal, setShowConfirmationModal] = useState(false); // State for confirmation modal
+	const [editModalOpen, setEditModalOpen] = useState(false);
+	const [modalMessage, setModalMessage] = useState(" ");
 	const [newUser, setNewUser] = useState({ email: "", first_name: "", last_name: "" }); // for creating new users
 	const [showAllUsers, setShowAllUsers] = useState(false); // toggle for showing all users
-
+	const [editUser, setEditUser] = useState({ id: null, email: "", first_name: "", last_name: "" });
 	/**
 	 * Fetch users data from the given page number.
 	 * @param {number} pageNumber
@@ -64,8 +67,12 @@ function Index() {
 
 	const toggleModal = () => setCreateUserModalOpen(!createUserModalOpen);
 	const toggleConfirmationModal = () => setShowConfirmationModal(!showConfirmationModal);
+	const toggleEditModal = () => setEditModalOpen(!editModalOpen);
 
-
+	// confirmation message after successful creation of new user
+	const creatUserModalMessage = () => {
+		setModalMessage('User created succesfully!')
+	};
 	const createUser = async () => {
 		try {
 			const apiKey = process.env.REACT_APP_KEY;
@@ -88,10 +95,36 @@ function Index() {
 			setUsers([...users, userWithLocalId]);
 
 			// Close the modal and reset the input fields
+			creatUserModalMessage();
 			toggleModal();
 			setNewUser({ email: "", first_name: "", last_name: "" });
 
 			toggleConfirmationModal(); // Show confirmation modal
+		} catch (error) {
+			setError(error.message);
+		}
+	};
+
+	// confirmation message after successful edit
+	const editUserModalMessage = () => {
+		setModalMessage('User details updated succesfully!');
+	}
+	const updateUser = async () => {
+		try {
+			const apiKey = process.env.REACT_APP_KEY;
+			const response = await fetch(`${apiKey}/users/${editUser.id}`, {
+				method: "PUT",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(editUser),
+			});
+			if (!response.ok) throw new Error("Failed to update user");
+			const updatedUser = await response.json();
+			setUsers(users.map((user) => (user.id === updatedUser.id ? updatedUser : user)));
+			toggleEditModal();
+			setEditUser({ id: null, email: "", first_name: "", last_name: "" });
+
+			editUserModalMessage();
+			toggleConfirmationModal();
 		} catch (error) {
 			setError(error.message);
 		}
@@ -137,7 +170,7 @@ function Index() {
 							<td>{user.first_name}</td>
 							<td>{user.last_name}</td>
 							<td>
-								<Button color="primary" size="sm" className="me-2">
+								<Button color="primary" size="sm" className="me-2" onClick={() => { setEditUser(user); toggleEditModal() }}>
 									Edit
 								</Button>
 								<Button color="danger" size="sm">
@@ -162,12 +195,18 @@ function Index() {
 				setNewUser={setNewUser}
 				createUser={createUser}
 			/>
+			<EditModal
+				isOpen={editModalOpen}
+				toggle={toggleEditModal}
+				editUser={editUser}
+				setEditUser={setEditUser}
+				updateUser={updateUser} />
 
 			{/* Confirmation Modal */}
 			<ConfirmationModal
 				isOpen={showConfirmationModal}
 				toggle={toggleConfirmationModal}
-				message="The new user has been successfully created and added to the list."
+				message={modalMessage}
 			/>
 		</Container>
 	);

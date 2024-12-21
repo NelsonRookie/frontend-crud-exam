@@ -1,9 +1,9 @@
 import React from 'react';
 import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from 'reactstrap';
-function ConfirmationModal({ isOpen, toggle, message }) {
+function ConfirmationModal({ isOpen, toggle, message, title = 'Confirmation' }) {
     return (
         <Modal isOpen={isOpen} toggle={toggle} className='fade-in-modal'>
-            <ModalHeader toggle={toggle}>User Created</ModalHeader>
+            <ModalHeader toggle={toggle}>{title}</ModalHeader>
             <ModalBody>
                 {message}
             </ModalBody>
